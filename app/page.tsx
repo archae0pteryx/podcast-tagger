@@ -1,23 +1,39 @@
-import dynamic from 'next/dynamic'
+'use client'
 
-const PeaksAudioDyn = dynamic(() => import('../components/Peaks').then(mod => mod.PeaksAudio), {
-  ssr: false,
-})
+import { AudioHeader } from '@/components/AudioHeader'
+import { AudioPlayer } from '@/components/AudioPlayer'
+import { ControlBar } from '@/components/ControlBar'
+import { SegmentInfo } from '@/components/SegmentInfo'
+import { usePeaks } from '@/hooks/usePeaks'
+import { Container, Grid, Paper } from '@mui/material'
 
 export default function Home() {
-  // const json = await getData()
+  const { peaks } = usePeaks()
   return (
-    <main>
-      <PeaksAudioDyn />
-    </main>
+    <Container
+      maxWidth="xl"
+      sx={{
+        marginTop: '1rem',
+      }}
+    >
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <AudioHeader />
+        </Grid>
+        <Grid item xs={12}>
+          <AudioPlayer />
+        </Grid>
+        {peaks && (
+          <>
+            <Grid item xs={12}>
+              <ControlBar />
+            </Grid>
+            <Grid item xs={12}>
+              <SegmentInfo />
+            </Grid>
+          </>
+        )}
+      </Grid>
+    </Container>
   )
 }
-
-// async function getData() {
-//   const data = await fetch('http://localhost:3000/api/s3', {
-//     method: 'POST',
-//     body: 'output/json/sn-906.json',
-//   })
-//   const json = await data.json()
-//   return json
-// }
