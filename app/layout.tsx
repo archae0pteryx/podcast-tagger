@@ -4,6 +4,8 @@ import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { AudioDataProvider } from '@/hooks/useAudioData'
 import { PeaksProvider } from '@/hooks/usePeaks'
+import { SttProvider } from '@/hooks/useStt'
+import { SegmentProvider } from '@/hooks/useSegments'
 
 const darkTheme = createTheme({
   palette: {
@@ -23,7 +25,11 @@ export default function RootLayout({
         <ThemeProvider theme={darkTheme}>
           <CssBaseline />
           <AudioDataProvider>
-            <PeaksProvider>{children}</PeaksProvider>
+            <PeaksProvider>
+              <SegmentProvider>
+                <SttProvider>{children}</SttProvider>
+              </SegmentProvider>
+            </PeaksProvider>
           </AudioDataProvider>
         </ThemeProvider>
       </body>

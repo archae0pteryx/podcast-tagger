@@ -1,7 +1,7 @@
 import { useAudioData } from '@/hooks/useAudioData'
 import { usePeaks } from '@/hooks/usePeaks'
 import { useSegments } from '@/hooks/useSegments'
-import { Backdrop, CircularProgress, Container } from '@mui/material'
+import { Alert, Backdrop, CircularProgress, Container } from '@mui/material'
 import { Section } from './Section'
 
 const styles = {
@@ -12,7 +12,8 @@ const styles = {
 }
 
 export const AudioPlayer = () => {
-  const { audioSrc, loading: audioDataLoading } = useAudioData()
+  const { audioSrc, loading: audioDataLoading, error: audioDataError } = useAudioData()
+  const { error: peaksError } = usePeaks()
   const { addSegment } = useSegments()
 
   const {
@@ -29,12 +30,14 @@ export const AudioPlayer = () => {
   const loading = audioDataLoading || peaksLoading
 
   const handleClick = () => {
-    addSegment()
+    // addSegment()
   }
 
   return (
     <Section>
       <LoadingOverlay loading={loading} />
+      {peaksError && <Alert severity="error">{peaksError}</Alert>}
+      {audioDataError && <Alert severity="error">{audioDataError}</Alert>}
       <Container
         maxWidth="xl"
         sx={{
