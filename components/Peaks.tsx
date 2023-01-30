@@ -1,20 +1,25 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import DataJSON from './sn-906.json'
+import WaveformDataJSON from './sn-906.waveform.json'
+import SttJSON from './sn-906.stt.json'
+
 const styles = {
-  width: '1000px',
+  // width: '1000px',
   height: '100px',
 }
 
 export const PeaksAudio = () => {
+  const [selectedPoint, setSelectedPoint] = useState<any>(null)
+  const [selectedSegment, setSelectedSegment] = useState<any>(null)
+  const [tags, setTags] = useState<any[]>([])
+  const [newTag, setNewTag] = useState('')
   const [peaks, setPeaks] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const audioRef = useRef(null)
   const overviewRef = useRef(null)
   const zoomViewRef = useRef(null)
-  const audioContext = new AudioContext()
 
   useEffect(() => {
     const load = async () => {
@@ -28,9 +33,8 @@ export const PeaksAudio = () => {
             container: overviewRef.current,
           },
           mediaElement: audioRef.current,
-          logger: console.error,
           waveformData: {
-            json: DataJSON as any,
+            json: WaveformDataJSON as any,
           },
         },
         function (err, peaks) {
@@ -39,6 +43,10 @@ export const PeaksAudio = () => {
             setError(err.message)
             return
           }
+          const view = peaks.views.getView('zoomview')
+          view.fitToContainer()
+          view.setAmplitudeScale(2)
+
           setPeaks(peaks)
           setLoading(false)
         }
@@ -54,41 +62,84 @@ export const PeaksAudio = () => {
     }
   }, [])
 
-  const addSegment = () => {
-    peaks.segments.add({
-      startTime: 0,
-      endTime: 10,
-      editable: true,
-      color: 'rgba(0, 0, 255, 0.5)',
-      labelText: 'Test',
-    })
+  const isWithinFuzz = (clickedTime, startTime = 0, endTime = 0) => {
+    const fuzz = 0.5
+    const low = startTime - fuzz
+    const high = endTime + fuzz
+    return clickedTime >= low && clickedTime <= high
   }
 
+  const handleClick = () => {
+    const time = peaks.player.getCurrentTime()
+
+    if (selectedSegment) {
+      const clickedInSegment = isWithinFuzz(
+        time,
+        selectedSegment.startTime,
+        selectedSegment.endTime
+      )
+      if (clickedInSegment) {
+        console.log('inside')
+        return
+      } else {
+        peaks.segments.remove(selectedSegment)
+        const seg = peaks.segments.add({
+          id: time,
+          startTime: time,
+          endTime: time + 0.5,
+          editable: true
+        })
+        setSelectedSegment(seg)
+      }
+    } else {
+      const seg = peaks.segments.add({
+        id: time,
+        startTime: time,
+        endTime: time + 0.1,
+        editable: true
+      })
+      setSelectedSegment(seg)
+    }
+  }
+
+  const handleClickOverview = () => {
+    const time = peaks.player.getCurrentTime()
+    const clickedInPoint = tags.some((tag) => {
+      return isWithinFuzz(time, tag.time, tag.time)
+    })
+    if (clickedInPoint) {
+      return
+    }
+
+    setTags([...tags, newTag])
+    setNewTag('')
+  }
   return (
     <div
       style={{
         display: 'flex',
         flexDirection: 'column',
-        width: '1000px',
-        height: '1000px',
+        width: 'auto',
+        margin: '2rem',
       }}
     >
       {loading && <p>Loading...</p>}
-      <div style={styles} ref={zoomViewRef}></div>
-      <div style={styles} ref={overviewRef}></div>
+      <div style={styles} ref={zoomViewRef} onClick={handleClick}></div>
+      <div style={styles} ref={overviewRef} onClick={handleClickOverview}></div>
       <audio ref={audioRef} controls>
         <source src="/sn-906.mp3" type="audio/mpeg" />
       </audio>
-      <button
-        style={{
-          margin: 10,
-          padding: 5,
-        }}
-        onClick={addSegment}
-      >
-        Add Segment
-      </button>
-      {error && <p>{error}</p>}
+      {error && <h3>{error}</h3>}
+      <div>
+        <h3>Selected Point</h3>
+        <p>Time: {selectedPoint?.time || 0}</p>
+        <p>Label: {selectedPoint?.labelText || ''}</p>
+      </div>
+      <div>
+        <h3>Selected Segment</h3>
+        <p>Time: {selectedSegment?.time || 0}</p>
+        <p>Label: {selectedSegment?.labelText || ''}</p>
+      </div>
     </div>
   )
 }
