@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  vosk:
+    image: alphacep/kaldi-en:latest
+    ports:
+      - "2700:2700"
+    volumes:
+      - ../stt-data/vosk-model-small-en-us-0.15:/opt/vosk-model-en/model
+  audio-stream:
+    build:
+      context: ../rs-audio-stream
+      dockerfile: ../rs-audio-stream/Dockerfile
+    ports:
+      - "2701:2701"
+

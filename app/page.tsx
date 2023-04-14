@@ -4,6 +4,7 @@ import { AudioHeader } from '@/components/AudioHeader'
 import { AudioPlayer } from '@/components/AudioPlayer'
 import { ControlBar } from '@/components/ControlBar'
 import { SegmentInfo } from '@/components/SegmentInfo'
+import { SocketInterface } from '@/components/SocketInterface'
 import { usePeaks } from '@/hooks/usePeaks'
 import { Container, Grid, Paper } from '@mui/material'
 
@@ -17,6 +18,9 @@ export default function Home() {
       }}
     >
       <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <SocketInterface />
+        </Grid>
         <Grid item xs={12}>
           <AudioHeader />
         </Grid>
